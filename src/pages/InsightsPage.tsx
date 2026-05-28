@@ -433,7 +433,7 @@ export const InsightsPage: React.FC = () => {
                         },
                       ]
                         .filter((s) => aiData.detailed_analysis[s.key]?.length)
-                        .map((s, idx) => (
+                        .map((s) => (
                           <div
                             key={s.key}
                             style={{
