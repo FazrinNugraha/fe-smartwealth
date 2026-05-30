@@ -39,17 +39,26 @@ All pages except Login, Register, and the OAuth callback are protected and requi
 
 ## Tech Stack
 
-| Category | Technology |
-|---|---|
-| Framework | React 19 |
-| Language | TypeScript |
-| Build Tool | Vite 8 |
-| Styling | Tailwind CSS v4 |
-| Routing | React Router v7 |
-| HTTP Client | Axios |
-| Charts | Recharts |
-| Compiler | Babel with React Compiler plugin |
-| Linting | ESLint with TypeScript and React Hooks rules |
+**Core**
+
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+
+**Styling & UI**
+
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge&logo=recharts&logoColor=white)
+
+**Routing & Data Fetching**
+
+![React Router](https://img.shields.io/badge/React_Router_v7-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+
+**Tooling**
+
+![Babel](https://img.shields.io/badge/Babel-F9DC3E?style=for-the-badge&logo=babel&logoColor=black)
+![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)
 
 ---
 
@@ -105,48 +114,81 @@ fe/
 
 ---
 
-## Local Setup
+## How It Works
 
-### Prerequisites
-- Node.js 18+
-- npm or any compatible package manager
+### Application Architecture
 
-### Installation
+The frontend is a single-page application (SPA). React Router handles all navigation client-side — the server only serves one HTML file, and page transitions happen without a full reload.
 
-```bash
-# Install dependencies
-npm install
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Browser (React SPA)                      │
+│                                                             │
+│  ┌──────────────┐     ┌──────────────┐     ┌────────────┐  │
+│  │   AuthContext │     │  React Router │     │   Pages    │  │
+│  │  (JWT token, │────▶│  (client-side │────▶│ Dashboard  │  │
+│  │   user state)│     │   routing)    │     │ Assets     │  │
+│  └──────────────┘     └──────────────┘     │ Insights   │  │
+│          │                                 │ Predictions│  │
+│          ▼                                 └────────────┘  │
+│  ┌──────────────┐     ┌──────────────┐                      │
+│  │  Axios Client │────▶│  API Module  │                      │
+│  │  (auto-attach │     │  (grouped by │                      │
+│  │   JWT header) │     │   domain)    │                      │
+│  └──────────────┘     └──────┬───────┘                      │
+└──────────────────────────────┼──────────────────────────────┘
+                               │  HTTPS REST API
+                               ▼
+                      Backend API (FastAPI)
 ```
 
-### Environment Variables
+### How a Page Loads Data
 
-Create a `.env` file in the `fe/` root directory:
+Every protected page follows the same pattern:
 
-```env
-VITE_API_BASE_URL=http://localhost:8000
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
+1. **Route guard** — `ProtectedRoute` in `App.tsx` checks `AuthContext`. If the user is not logged in, they are redirected to `/login` immediately
+2. **Page mounts** — the page component fires a `useEffect` that calls the relevant API function from the `api/` module
+3. **Axios sends the request** — an Axios request interceptor automatically reads the access token from `AuthContext` and attaches it as the `Authorization: Bearer` header
+4. **Response arrives** — state is updated, the UI re-renders with real data
+5. **Token expires** — if the API returns a 401, an Axios response interceptor silently calls `POST /auth/refresh` to get a new access token, then retries the original request automatically
+
+### Authentication Flow
+
+```
+Email / Password:
+  User fills login form
+    → POST /api/v1/auth/login
+    → AuthContext stores access token in memory
+    → Refresh token saved for silent renewal
+    → User redirected to /dashboard
+
+Google OAuth:
+  User clicks "Sign in with Google"
+    → Redirect to Google consent screen
+    → Google redirects back to /auth/callback
+    → GoogleCallbackPage exchanges the code with the backend
+    → AuthContext stores the returned token
+    → User redirected to /dashboard
+
+Silent Token Refresh:
+  Any API call returns 401
+    → Axios interceptor calls POST /auth/refresh
+    → New access token stored in AuthContext
+    → Original request retried automatically
+    → If refresh also fails → logout → redirect to /login
 ```
 
-### Start Development Server
+### Page-by-Page Data Flow
 
-```bash
-npm run dev
-```
+| Page | What it fetches | Where data comes from |
+|---|---|---|
+| Dashboard | Portfolio summary, allocation, wealth history, asset performance | `/api/v1/dashboard/*` |
+| Assets | All user assets with current prices and ROI | `/api/v1/assets` + `/api/v1/prices/*` |
+| Transactions | Full transaction history | `/api/v1/transactions` |
+| Insights | Health score, rule-based alerts, AI analysis | `/api/v1/insights` + `/api/v1/insights/ai` |
+| Predictions | Stock prediction for a given ticker and horizon | `/api/v1/predictions/{ticker}` |
 
-The app runs at `http://localhost:5173`.
-
-### Other Commands
-
-```bash
-# Type-check and build for production
-npm run build
-
-# Preview the production build locally
-npm run preview
-
-# Run the linter
-npm run lint
-```
+---
 
 ---
 
