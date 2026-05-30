@@ -3,6 +3,7 @@ import { AppShell } from "../components";
 import { getStockPrediction } from "../api";
 import type { StockPredictionResponse } from "../api";
 import { formatMoney } from "../lib/format";
+import { useChartTouchLock } from "../lib/useChartTouchLock";
 import {
   ResponsiveContainer,
   LineChart,
@@ -274,56 +275,8 @@ const PredictionResult: React.FC<{ prediction: StockPredictionResponse }> = ({
           <h3 className="chart-title-v5" style={{ fontSize: 14, fontWeight: 500, color: "var(--color-ink)" }}>Jalur Proyeksi Target (Projection Fan)</h3>
           <p className="micro" style={{ color: "var(--color-ink-mute)" }}>Visualisasi lintasan harga proyeksi optimis, median, dan pesimis selama {prediction.horizon_days} hari ke depan</p>
         </div>
-        <div style={{ width: "100%", height: 260 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: -22, bottom: 0 }}>
-              <CartesianGrid stroke="#e3e8ee" strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="step" tick={{ fontSize: 11, fill: "#64748d" }} tickLine={false} axisLine={false} />
-              <YAxis
-                tick={{ fontSize: 11, fill: "#64748d" }}
-                tickLine={false}
-                axisLine={false}
-                domain={["auto", "auto"]}
-                tickFormatter={(v) => `Rp${v.toLocaleString("id-ID")}`}
-              />
-              <ChartTooltip
-                formatter={(value: any) => [formatMoney(Number(value), "IDR"), ""]}
-                contentStyle={{
-                  background: "var(--color-canvas)",
-                  border: "1px solid var(--color-hairline)",
-                  borderRadius: 8,
-                  fontSize: 11,
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="Skenario Optimis (Upper)"
-                stroke="#10b981"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="Skenario Utama (Median)"
-                stroke="#533afd"
-                strokeWidth={2.5}
-                dot={{ r: 2.5, fill: "#533afd" }}
-                activeDot={{ r: 5 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="Skenario Pesimis (Lower)"
-                stroke="#ea2261"
-                strokeWidth={1.5}
-                strokeDasharray="4 4"
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <PredictionFanChart chartData={chartData} horizon={prediction.horizon_days} />
+
       </div>
 
       {/* 3. Sleek Forecast Targets Table */}
@@ -448,3 +401,68 @@ const directionPill = (direction: StockPredictionResponse["direction"]) => {
   return "pill-tag-gray";
 };
 
+type FanChartPoint = {
+  step: string;
+  "Skenario Optimis (Upper)": number;
+  "Skenario Utama (Median)": number;
+  "Skenario Pesimis (Lower)": number;
+};
+
+const PredictionFanChart: React.FC<{
+  chartData: FanChartPoint[];
+  horizon: number;
+}> = ({ chartData, horizon: _horizon }) => {
+  const chartRef = useChartTouchLock();
+  return (
+    <div ref={chartRef} style={{ touchAction: 'pan-y', width: '100%', height: 260 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData} margin={{ top: 10, right: 10, left: -22, bottom: 0 }}>
+          <CartesianGrid stroke="#e3e8ee" strokeDasharray="4 4" vertical={false} />
+          <XAxis dataKey="step" tick={{ fontSize: 11, fill: '#64748d' }} tickLine={false} axisLine={false} />
+          <YAxis
+            tick={{ fontSize: 11, fill: '#64748d' }}
+            tickLine={false}
+            axisLine={false}
+            domain={['auto', 'auto']}
+            tickFormatter={(v) => `Rp${v.toLocaleString('id-ID')}`}
+          />
+          <ChartTooltip
+            formatter={(value: any) => [formatMoney(Number(value), 'IDR'), '']}
+            contentStyle={{
+              background: 'var(--color-canvas)',
+              border: '1px solid var(--color-hairline)',
+              borderRadius: 8,
+              fontSize: 11,
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="Skenario Optimis (Upper)"
+            stroke="#10b981"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            dot={false}
+            activeDot={{ r: 3 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="Skenario Utama (Median)"
+            stroke="#533afd"
+            strokeWidth={2.5}
+            dot={{ r: 2.5, fill: '#533afd' }}
+            activeDot={{ r: 5 }}
+          />
+          <Line
+            type="monotone"
+            dataKey="Skenario Pesimis (Lower)"
+            stroke="#ea2261"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            dot={false}
+            activeDot={{ r: 3 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};

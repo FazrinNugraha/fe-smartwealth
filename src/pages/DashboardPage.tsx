@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { ASSET_COLORS, ASSET_LABELS } from "../lib/constants";
 import { formatMoney, formatQuantity } from "../lib/format";
+import { useChartTouchLock } from "../lib/useChartTouchLock";
 
 const PERIODS = ["7d", "30d", "90d", "1y", "all"] as const;
 type Period = (typeof PERIODS)[number];
@@ -699,62 +700,10 @@ export const DashboardPage: React.FC = () => {
                 <p className="body-md">No portfolio data yet</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={isMobile ? 220 : 260}>
-                <AreaChart
-                  data={portfolioData}
-                  margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="portfolioReturnGrad"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="#533afd"
-                        stopOpacity={0.18}
-                      />
-                      <stop offset="95%" stopColor="#533afd" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    stroke="#e3e8ee"
-                    strokeDasharray="4 4"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 11, fill: "#64748d" }}
-                    tickLine={false}
-                    axisLine={false}
-                    interval="preserveStartEnd"
-                    minTickGap={isMobile ? 28 : 16}
-                  />
-                  <YAxis
-                    hide={isMobile}
-                    tick={{ fontSize: 11, fill: "#64748d" }}
-                    tickLine={false}
-                    axisLine={false}
-                    width={48}
-                    tickFormatter={compactPercent}
-                  />
-                  <Tooltip content={<MoneyTooltip />} />
-                  <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="4 3" />
-                  <Area
-                    type="monotone"
-                    dataKey="returnValue"
-                    name="Portfolio"
-                    stroke="#533afd"
-                    strokeWidth={2}
-                    fill="url(#portfolioReturnGrad)"
-                    dot={false}
-                    activeDot={{ r: 4, fill: "#533afd" }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <PortfolioAreaChart
+                portfolioData={portfolioData}
+                isMobile={isMobile}
+              />
             )}
           </div>
 
@@ -776,38 +725,7 @@ export const DashboardPage: React.FC = () => {
               </div>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height={150}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={42}
-                      outerRadius={66}
-                      dataKey="value"
-                      paddingAngle={2}
-                    >
-                      {pieData.map((entry) => (
-                        <Cell
-                          key={entry.type}
-                          fill={ASSET_COLORS[entry.type] ?? "#b9b9f9"}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: unknown) => [
-                        formatMoney(Number(val ?? 0), "IDR"),
-                        "",
-                      ]}
-                      contentStyle={{
-                        background: "var(--color-canvas)",
-                        border: "1px solid var(--color-hairline)",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <AllocationPieChart pieData={pieData} />
                 <div
                   style={{
                     display: "flex",
@@ -1214,46 +1132,12 @@ const PerformanceLinePanel: React.FC<{
           ))}
         </div>
 
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart
-            data={chartData}
-            margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid
-              stroke="#e3e8ee"
-              strokeDasharray="4 4"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 11, fill: "#64748d" }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: "#64748d" }}
-              tickLine={false}
-              axisLine={false}
-              width={34}
-              tickFormatter={(v) => `${v}%`}
-            />
-            <Tooltip content={<ChartTooltip suffix={tooltipSuffix} />} />
-            <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="4 3" />
-            {visibleAssetList.map((asset) => (
-              <Line
-                key={asset.asset_id}
-                type="monotone"
-                dataKey={asset.asset_id}
-                name={asset.symbol}
-                stroke={assetColor(asset.asset_id)}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: assetColor(asset.asset_id) }}
-                connectNulls
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+        <PerformanceLineChart
+          chartData={chartData}
+          tooltipSuffix={tooltipSuffix}
+          visibleAssetList={visibleAssetList}
+          assetColor={assetColor}
+        />
       </>
     )}
   </div>
@@ -1400,45 +1284,11 @@ const AssetSparklinePanel: React.FC<{
                   </span>
                 </div>
 
-                <ResponsiveContainer width="100%" height={86}>
-                  <AreaChart
-                    data={data}
-                    margin={{ top: 6, right: 0, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id={gradientId}
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor={color}
-                          stopOpacity={0.22}
-                        />
-                        <stop offset="95%" stopColor={color} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <Tooltip content={<AssetSparklineTooltip />} />
-                    <XAxis dataKey="date" hide />
-                    <ReferenceLine
-                      y={0}
-                      stroke="#cbd5e1"
-                      strokeDasharray="4 3"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke={color}
-                      strokeWidth={2}
-                      fill={`url(#${gradientId})`}
-                      dot={false}
-                      activeDot={{ r: 3, fill: color }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <SparklineChart
+                  data={data}
+                  color={color}
+                  gradientId={gradientId}
+                />
               </div>
             );
           })}
@@ -1514,3 +1364,180 @@ const MoverList: React.FC<{ title: string; assets: PerformanceAsset[] }> = ({
   </div>
 );
 
+// ── Touch-safe chart sub-components ─────────────────────────────────────────
+// Each wraps its ResponsiveContainer in a div with a useChartTouchLock ref.
+// This prevents the page from scrolling while the user's finger is on the chart.
+
+type SparklinePoint = {
+  date: string;
+  value: number;
+  price: number;
+  avgBuyPrice: number;
+  currency: string;
+};
+
+const PortfolioAreaChart: React.FC<{
+  portfolioData: { date: string; returnValue: number; totalValue: number }[];
+  isMobile: boolean;
+}> = ({ portfolioData, isMobile }) => {
+  const chartRef = useChartTouchLock();
+  return (
+    <div ref={chartRef} style={{ touchAction: 'pan-y' }}>
+      <ResponsiveContainer width="100%" height={isMobile ? 220 : 260}>
+        <AreaChart data={portfolioData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="portfolioReturnGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#533afd" stopOpacity={0.18} />
+              <stop offset="95%" stopColor="#533afd" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="#e3e8ee" strokeDasharray="4 4" vertical={false} />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 11, fill: '#64748d' }}
+            tickLine={false}
+            axisLine={false}
+            interval="preserveStartEnd"
+            minTickGap={isMobile ? 28 : 16}
+          />
+          <YAxis
+            hide={isMobile}
+            tick={{ fontSize: 11, fill: '#64748d' }}
+            tickLine={false}
+            axisLine={false}
+            width={48}
+            tickFormatter={compactPercent}
+          />
+          <Tooltip content={<MoneyTooltip />} />
+          <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="4 3" />
+          <Area
+            type="monotone"
+            dataKey="returnValue"
+            name="Portfolio"
+            stroke="#533afd"
+            strokeWidth={2}
+            fill="url(#portfolioReturnGrad)"
+            dot={false}
+            activeDot={{ r: 4, fill: '#533afd' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const AllocationPieChart: React.FC<{
+  pieData: { name: string; value: number; type: string }[];
+}> = ({ pieData }) => {
+  const chartRef = useChartTouchLock();
+  return (
+    <div ref={chartRef} style={{ touchAction: 'pan-y' }}>
+      <ResponsiveContainer width="100%" height={150}>
+        <PieChart>
+          <Pie
+            data={pieData}
+            cx="50%"
+            cy="50%"
+            innerRadius={42}
+            outerRadius={66}
+            dataKey="value"
+            paddingAngle={2}
+          >
+            {pieData.map((entry) => (
+              <Cell key={entry.type} fill={ASSET_COLORS[entry.type] ?? '#b9b9f9'} />
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(val: unknown) => [formatMoney(Number(val ?? 0), 'IDR'), '']}
+            contentStyle={{
+              background: 'var(--color-canvas)',
+              border: '1px solid var(--color-hairline)',
+              borderRadius: 8,
+              fontSize: 12,
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const PerformanceLineChart: React.FC<{
+  chartData: Record<string, string | number>[];
+  tooltipSuffix: string;
+  visibleAssetList: PerformanceAsset[];
+  assetColor: (assetId: string) => string;
+}> = ({ chartData, tooltipSuffix, visibleAssetList, assetColor }) => {
+  const chartRef = useChartTouchLock();
+  return (
+    <div ref={chartRef} style={{ touchAction: 'pan-y' }}>
+      <ResponsiveContainer width="100%" height={260}>
+        <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke="#e3e8ee" strokeDasharray="4 4" vertical={false} />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 11, fill: '#64748d' }}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            tick={{ fontSize: 11, fill: '#64748d' }}
+            tickLine={false}
+            axisLine={false}
+            width={34}
+            tickFormatter={(v) => `${v}%`}
+          />
+          <Tooltip content={<ChartTooltip suffix={tooltipSuffix} />} />
+          <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="4 3" />
+          {visibleAssetList.map((asset) => (
+            <Line
+              key={asset.asset_id}
+              type="monotone"
+              dataKey={asset.asset_id}
+              name={asset.symbol}
+              stroke={assetColor(asset.asset_id)}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, fill: assetColor(asset.asset_id) }}
+              connectNulls
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const SparklineChart: React.FC<{
+  data: SparklinePoint[];
+  color: string;
+  gradientId: string;
+}> = ({ data, color, gradientId }) => {
+  const chartRef = useChartTouchLock();
+  return (
+    <div ref={chartRef} style={{ touchAction: 'pan-y' }}>
+      <ResponsiveContainer width="100%" height={86}>
+        <AreaChart data={data} margin={{ top: 6, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.22} />
+              <stop offset="95%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Tooltip content={<AssetSparklineTooltip />} />
+          <XAxis dataKey="date" hide />
+          <ReferenceLine y={0} stroke="#cbd5e1" strokeDasharray="4 3" />
+          <Area
+            type="monotone"
+            dataKey="value"
+            stroke={color}
+            strokeWidth={2}
+            fill={`url(#${gradientId})`}
+            dot={false}
+            activeDot={{ r: 3, fill: color }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
