@@ -122,19 +122,19 @@ The frontend is a single-page application (SPA). React Router handles all naviga
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Browser (React SPA)                      │
+│                     Browser (React SPA)                     │
 │                                                             │
-│  ┌──────────────┐     ┌──────────────┐     ┌────────────┐  │
-│  │   AuthContext │     │  React Router │     │   Pages    │  │
-│  │  (JWT token, │────▶│  (client-side │────▶│ Dashboard  │  │
-│  │   user state)│     │   routing)    │     │ Assets     │  │
-│  └──────────────┘     └──────────────┘     │ Insights   │  │
-│          │                                 │ Predictions│  │
-│          ▼                                 └────────────┘  │
+│  ┌──────────────┐     ┌──────────────┐     ┌────────────┐   │
+│  │   AuthContext│     │  React Router│     │   Pages    │   │
+│  │  (JWT token, │────▶│  (client-side│────▶│ Dashboard │   │
+│  │   user state)│     │   routing)   │     │ Assets     │   │
+│  └──────────────┘     └──────────────┘     │ Insights   │   │
+│          │                                 │ Predictions│   │
+│          ▼                                 └────────────┘   │
 │  ┌──────────────┐     ┌──────────────┐                      │
-│  │  Axios Client │────▶│  API Module  │                      │
-│  │  (auto-attach │     │  (grouped by │                      │
-│  │   JWT header) │     │   domain)    │                      │
+│  │  Axios Client │────▶│  API Module │                     │
+│  │  (auto-attach │     │  (grouped by│                      │
+│  │   JWT header) │     │   domain)   │                      │
 │  └──────────────┘     └──────┬───────┘                      │
 └──────────────────────────────┼──────────────────────────────┘
                                │  HTTPS REST API
