@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AppShell } from "../components";
-import { getRuleBasedInsights, getAIInsights, refreshAIInsights } from "../api";
+import { getRuleBasedInsights, refreshAIInsights } from "../api";
 
 const SEVERITY_STYLE: Record<string, string> = {
   high: "alert-error",
@@ -36,11 +36,6 @@ export const InsightsPage: React.FC = () => {
     try {
       const r = await getRuleBasedInsights();
       setRuleData(r);
-      try {
-        setAiData(await getAIInsights());
-      } catch {
-        /* AI optional */
-      }
     } catch (e: any) {
       setError(e.response?.data?.message || "Failed to load insights");
     } finally {
@@ -327,8 +322,8 @@ export const InsightsPage: React.FC = () => {
                     className="caption"
                     style={{ color: "var(--color-ink-mute)" }}
                   >
-                    Add assets first, then click Generate to get AI-powered
-                    analysis
+                    Klik Generate untuk membuat analisis AI. Gemini tidak akan
+                    dijalankan sebelum kamu memintanya.
                   </p>
                 </div>
               ) : (

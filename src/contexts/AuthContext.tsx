@@ -1,11 +1,8 @@
 /**
  * Auth Context - Manage authentication state
  *
- * Strategy untuk avoid loading screen kosong saat refresh:
- *  - Cache user data di localStorage (key: 'user')
- *  - Saat mount: render langsung dari cache (tanpa loading spinner)
- *  - Verify token ke backend di BACKGROUND, update state kalau berubah
- *  - Loading=true HANYA jika belum ada cache dan ada token
+ * Auth is verified with the backend before protected pages are rendered.
+ * This avoids showing stale cached dashboard data while Render is waking up.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -32,15 +29,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USER_CACHE_KEY = 'user';
 
-const getCachedUser = (): User | null => {
-  try {
-    const raw = localStorage.getItem(USER_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
 const setCachedUser = (user: User | null) => {
   if (user) {
     localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
@@ -50,14 +38,12 @@ const setCachedUser = (user: User | null) => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize dari cache dulu — instant render, no loading screen
-  const [user, setUser] = useState<User | null>(getCachedUser);
+  const [user, setUser] = useState<User | null>(null);
 
-  // Loading hanya kalau ada token tapi belum ada cached user
-  const hasToken = !!localStorage.getItem('access_token');
-  const [loading, setLoading] = useState(hasToken && !getCachedUser());
+  // Keep protected routes on a connection screen until the token is verified.
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('access_token'));
 
-  // Verify token + sync user data di background setiap mount
+  // Verify token and sync user data on every mount.
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('access_token');
