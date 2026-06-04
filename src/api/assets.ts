@@ -1,6 +1,4 @@
-/**
- * Assets API - Asset management endpoints
- */
+
 
 import apiClient from "./client";
 
