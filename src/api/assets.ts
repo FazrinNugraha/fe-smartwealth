@@ -1,6 +1,6 @@
 
 
-import apiClient from "./client";
+import { apiClient, fetchWithCache } from "./client";
 import { clearDashboardCache } from "./dashboard";
 
 export interface AssetCreate {
@@ -20,14 +20,12 @@ export interface AssetUpdate {
 
 // Get all assets
 export const getAssets = async () => {
-  const response = await apiClient.get("/assets");
-  return response.data;
+  return fetchWithCache("assets", "/assets");
 };
 
 // Get asset by ID
 export const getAsset = async (id: string) => {
-  const response = await apiClient.get(`/assets/${id}`);
-  return response.data;
+  return fetchWithCache(`asset-${id}`, `/assets/${id}`);
 };
 
 // Create asset

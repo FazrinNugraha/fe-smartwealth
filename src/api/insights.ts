@@ -2,18 +2,16 @@
  * Insights API - Portfolio insights endpoints
  */
 
-import apiClient from "./client";
+import { apiClient, fetchWithCache } from "./client";
 
 // Get rule-based insights
 export const getRuleBasedInsights = async () => {
-  const response = await apiClient.get("/insights");
-  return response.data;
+  return fetchWithCache("insights-rule-based", "/insights");
 };
 
 // Get AI insights (Gemini)
 export const getAIInsights = async () => {
-  const response = await apiClient.get("/insights/ai");
-  return response.data;
+  return fetchWithCache("insights-ai", "/insights/ai");
 };
 
 // Refresh AI insights (force regenerate)

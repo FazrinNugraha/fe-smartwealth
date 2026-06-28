@@ -2,7 +2,7 @@
  * Predictions API - IDX stock forecast endpoints
  */
 
-import apiClient from "./client";
+import { apiClient, fetchWithCache } from "./client";
 
 export type StockPredictionDirection = "naik" | "turun" | "sideways";
 
@@ -30,9 +30,9 @@ export const getStockPrediction = async (
   ticker: string,
   horizon: number = 1,
 ): Promise<StockPredictionResponse> => {
-  const response = await apiClient.get(`/predictions/${ticker}`, {
+  const cacheKey = `prediction-${ticker}-${horizon}`;
+  return fetchWithCache(cacheKey, `/predictions/${ticker}`, {
     params: { horizon },
     timeout: 60000,
   });
-  return response.data;
 };

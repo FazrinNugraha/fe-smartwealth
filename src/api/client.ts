@@ -16,11 +16,49 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "Cache-Control": "no-cache, no-store, must-revalidate",
-    "Pragma": "no-cache",
-    "Expires": "0",
+    // Menghapus header no-cache agar browser bisa melakukan caching HTTP standar
   },
 });
+
+// --- SMART CACHE SYSTEM ---
+// Caching data di RAM (Client-Side) selama 1 menit (60 detik)
+const CACHE_TTL_MS = 60 * 1000;
+const promiseCache = new Map<string, Promise<any>>();
+const dataCache = new Map<string, { timestamp: number; data: any }>();
+
+export const clearGlobalCache = () => {
+  promiseCache.clear();
+  dataCache.clear();
+};
+
+export const fetchWithCache = <T = any>(key: string, url: string, config?: any): Promise<T> => {
+  // 1. Cek apakah ada data di cache dan belum kadaluarsa
+  const cached = dataCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return Promise.resolve(cached.data);
+  }
+
+  // 2. Cek apakah API dengan key yang sama sedang di-fetch (Deduplikasi)
+  if (promiseCache.has(key)) {
+    return promiseCache.get(key) as Promise<T>;
+  }
+
+  // 3. Tarik data asli dari server
+  const promise = apiClient
+    .get(url, config)
+    .then((response) => {
+      dataCache.set(key, { timestamp: Date.now(), data: response.data });
+      promiseCache.delete(key);
+      return response.data;
+    })
+    .catch((err) => {
+      promiseCache.delete(key);
+      throw err;
+    });
+
+  promiseCache.set(key, promise);
+  return promise;
+};
 
 // Request interceptor - Add auth token
 apiClient.interceptors.request.use(

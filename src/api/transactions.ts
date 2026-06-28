@@ -2,7 +2,7 @@
  * Transactions API - Transaction management endpoints
  */
 
-import apiClient from "./client";
+import { apiClient, fetchWithCache } from "./client";
 import { clearDashboardCache } from "./dashboard";
 
 export interface TransactionCreate {
@@ -22,8 +22,8 @@ export const getTransactions = async (params?: {
   start_date?: string;
   end_date?: string;
 }) => {
-  const response = await apiClient.get("/transactions", { params });
-  return response.data;
+  const cacheKey = params ? `transactions-${JSON.stringify(params)}` : "transactions-all";
+  return fetchWithCache(cacheKey, "/transactions", { params });
 };
 
 // Create transaction
