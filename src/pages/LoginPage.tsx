@@ -238,7 +238,7 @@ export const LoginPage: React.FC = () => {
                 }}
               >
                 One Click Away from <br />
-                <span style={{ fontWeight: 500, color: "var(--color-primary)" }}>stashwise Decisions</span>
+                <span style={{ fontWeight: 500, color: "var(--color-primary)" }}>Stashwise Decisions</span>
               </h2>
             </div>
           </div>
