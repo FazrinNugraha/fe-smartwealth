@@ -95,7 +95,7 @@ export const LoginPage: React.FC = () => {
               letterSpacing: "-0.5px",
             }}
           >
-            smart<span style={{ color: "var(--color-primary)" }}>wealth</span>
+            stash<span style={{ color: "var(--color-primary)" }}>wise</span>
           </span>
         </Link>
       </header>
@@ -238,7 +238,7 @@ export const LoginPage: React.FC = () => {
                 }}
               >
                 One Click Away from <br />
-                <span style={{ fontWeight: 500, color: "var(--color-primary)" }}>Smart Wealth Decisions</span>
+                <span style={{ fontWeight: 500, color: "var(--color-primary)" }}>stashwise Decisions</span>
               </h2>
             </div>
           </div>
@@ -491,7 +491,7 @@ export const LoginPage: React.FC = () => {
         }}
       >
         <div>
-          <span>&copy; {new Date().getFullYear()} SmartWealth, Inc. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} stashwise, Inc. All rights reserved.</span>
         </div>
         <div style={{ display: "flex", gap: 24 }}>
           <a href="#terms" onClick={(e) => e.preventDefault()} style={{ color: "var(--color-ink-mute)", textDecoration: "none" }}>
