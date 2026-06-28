@@ -95,7 +95,7 @@ export const LoginPage: React.FC = () => {
               letterSpacing: "-0.5px",
             }}
           >
-            stash<span style={{ color: "var(--color-primary)" }}>wise</span>
+            Stash<span style={{ color: "var(--color-primary)" }}>wise</span>
           </span>
         </Link>
       </header>
@@ -491,7 +491,7 @@ export const LoginPage: React.FC = () => {
         }}
       >
         <div>
-          <span>&copy; {new Date().getFullYear()} stashwise, Inc. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Stashwise, Inc. All rights reserved.</span>
         </div>
         <div style={{ display: "flex", gap: 24 }}>
           <a href="#terms" onClick={(e) => e.preventDefault()} style={{ color: "var(--color-ink-mute)", textDecoration: "none" }}>

@@ -221,7 +221,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 letterSpacing: -0.2,
               }}
             >
-              stashwise
+              Stashwise
             </span>
             <button
               type="button"
