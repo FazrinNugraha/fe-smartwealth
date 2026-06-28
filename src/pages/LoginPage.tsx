@@ -487,8 +487,7 @@ export const LoginPage: React.FC = () => {
           justifyContent: "space-between",
           fontSize: 12,
           color: "var(--color-ink-mute)",
-          borderTop: "1px solid var(--color-hairline)",
-          background: "var(--color-canvas)",
+          background: "transparent",
         }}
       >
         <div>
