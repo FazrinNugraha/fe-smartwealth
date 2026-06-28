@@ -3,6 +3,7 @@
  */
 
 import apiClient from "./client";
+import { clearDashboardCache } from "./dashboard";
 
 export interface TransactionCreate {
   asset_id: string;
@@ -36,10 +37,12 @@ export const createTransaction = async (data: TransactionCreate) => {
     fees: data.fees || "0",
   };
   const response = await apiClient.post("/transactions", payload);
+  clearDashboardCache();
   return response.data;
 };
 
 // Delete transaction
 export const deleteTransaction = async (id: string) => {
   await apiClient.delete(`/transactions/${id}`);
+  clearDashboardCache();
 };

@@ -6,7 +6,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login as apiLogin, register as apiRegister, logout as apiLogout, googleAuth as apiGoogleAuth, getCurrentUser } from '../api';
+import { login as apiLogin, register as apiRegister, logout as apiLogout, googleAuth as apiGoogleAuth, getCurrentUser, clearDashboardCache } from '../api';
 
 interface User {
   id: string;
@@ -120,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    clearDashboardCache();
     setCachedUser(null);
     setUser(null);
   };
