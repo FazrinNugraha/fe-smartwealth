@@ -2,7 +2,7 @@
  * Predictions API - IDX stock forecast endpoints
  */
 
-import { apiClient, fetchWithCache } from "./client";
+import { fetchWithCache } from "./client";
 
 export type StockPredictionDirection = "naik" | "turun" | "sideways";
 
