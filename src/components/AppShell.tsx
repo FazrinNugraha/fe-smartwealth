@@ -172,7 +172,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </span>
-          <span>stashwise</span>
+          <span>Stashwise</span>
         </div>
       </div>
 
